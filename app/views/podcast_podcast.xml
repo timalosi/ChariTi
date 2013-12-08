@@ -1,6 +1,6 @@
 <Alloy>
 	<View id="Wrapper" name="Podcast Podcast">
-		<Require type="widget" src="com.chariti.navigationBar" id="NavigationBar" />
+		<Require type="widget" src="com.mcongrove.navigationBar" id="NavigationBar" />
 		
 		<View id="container">
 			<View id="artworkContainer">
@@ -22,7 +22,7 @@
 					<ImageView id="play" image="/images/audioPlay.png" />
 					<ImageView id="pause" image="/images/audioPause.png" />
 					<ImageView id="next" image="/images/audioNext.png" />
-					<ImageView id="download" image="/images/audioDownload.png" />
+					<ImageView platform="ios" id="download" image="/images/audioDownload.png" />
 				</View>
 			</View>
 		</View>

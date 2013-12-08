@@ -18,16 +18,22 @@ $.init = function() {
 
 	$.handleData(CONFIG.items);
 
-	$.NavigationBar.setBackgroundColor(APP.Settings.colors.primary || "#000");
+	$.NavigationBar.setBackgroundColor(APP.Settings.colors.primary);
 
 	if(CONFIG.isChild === true) {
-		$.NavigationBar.showBack();
+		$.NavigationBar.showBack(function(_event) {
+			APP.removeChild();
+		});
 	}
 
 	if(APP.Settings.useSlideMenu) {
-		$.NavigationBar.showMenu();
+		$.NavigationBar.showMenu(function(_event) {
+			APP.toggleMenu();
+		});
 	} else {
-		$.NavigationBar.showSettings();
+		$.NavigationBar.showSettings(function(_event) {
+			APP.openSettings();
+		});
 	}
 };
 

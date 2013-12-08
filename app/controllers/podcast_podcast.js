@@ -25,7 +25,7 @@ $.init = function() {
 
 	$.handleData(MODEL.getPodcast(CONFIG.id));
 
-	$.position.backgroundColor = APP.Settings.colors.primary || "#000";
+	$.position.backgroundColor = APP.Settings.colors.primary;
 };
 
 /**
@@ -44,22 +44,18 @@ $.handleData = function(_data) {
 	ACTION.next = MODEL.getNextPodcast(_data.id);
 	ACTION.previous = MODEL.getPreviousPodcast(_data.id);
 
-	$.NavigationBar.setBackgroundColor(APP.Settings.colors.primary || "#000");
+	$.NavigationBar.setBackgroundColor(APP.Settings.colors.primary);
 
 	if(APP.Device.isHandheld) {
-		$.NavigationBar.showBack({
-			callback: function(_event) {
-				$.streamStop();
+		$.NavigationBar.showBack(function(_event) {
+			$.streamStop();
 
-				APP.removeAllChildren();
-			}
+			APP.removeAllChildren();
 		});
 	}
 
-	$.NavigationBar.showAction({
-		callback: function(_event) {
-			SOCIAL.share(ACTION.url, $.NavigationBar.right);
-		}
+	$.NavigationBar.showAction(function(_event) {
+		SOCIAL.share(ACTION.url, $.NavigationBar.right);
 	});
 };
 
@@ -108,10 +104,12 @@ $.createAudioPlayer = function(_url) {
 	STREAM.addEventListener("playbackstate", $.streamState);
 
 	STREAM.addEventListener("loadstate", function(_event) {
-		var duration = DATE.duration(STREAM.getDuration());
-		$.duration.text = (duration.hours() !== 0 ? duration.hours() + ":" : "") + duration.minutes() + ":" + (duration.seconds() < 10 ? "0" : "") + duration.seconds();
+		if(_event.loadState == Ti.Media.VIDEO_LOAD_STATE_PLAYABLE) {
+			var duration = DATE.duration(STREAM.getDuration());
+			$.duration.text = (duration.hours() !== 0 ? duration.hours() + ":" : "") + duration.minutes() + ":" + (duration.seconds() < 10 ? "0" : "") + duration.seconds();
 
-		$.streamPlay();
+			$.streamPlay();
+		}
 	});
 
 	setInterval($.streamProgress, 500);
@@ -123,7 +121,22 @@ $.createAudioPlayer = function(_url) {
  * Downloads the audio file from the remote source
  */
 $.downloadRemoteFile = function() {
-	MODEL.downloadPodcast(ACTION.url);
+	Alloy.createWidget("com.mcongrove.toast", null, {
+		text: "Starting Download",
+		duration: 2000,
+		view: APP.GlobalWrapper
+	});
+
+	MODEL.downloadPodcast({
+		url: ACTION.url,
+		callback: function(_event) {
+			Alloy.createWidget("com.mcongrove.toast", null, {
+				text: "Download Complete",
+				duration: 2000,
+				view: APP.GlobalWrapper
+			});
+		}
+	});
 
 	$.disableDownload();
 };
@@ -236,9 +249,13 @@ $.handleNext = function(_event) {
 $.play.addEventListener("click", $.streamPlay);
 $.pause.addEventListener("click", $.streamPause);
 $.track.addEventListener("click", $.streamSeek);
-$.download.addEventListener("click", $.downloadRemoteFile);
 $.previous.addEventListener("click", $.handlePrevious);
 $.next.addEventListener("click", $.handleNext);
+
+if(OS_IOS) {
+	// Download is disabled for Android, we get a SIGSEGV
+	$.download.addEventListener("click", $.downloadRemoteFile);
+}
 
 // Kick off the init
 $.init();

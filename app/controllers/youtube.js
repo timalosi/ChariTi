@@ -27,16 +27,22 @@ $.init = function() {
 
 	$.retrieveData();
 
-	$.NavigationBar.setBackgroundColor(APP.Settings.colors.primary || "#000");
+	$.NavigationBar.setBackgroundColor(APP.Settings.colors.primary);
 
 	if(CONFIG.isChild === true) {
-		$.NavigationBar.showBack();
+		$.NavigationBar.showBack(function(_event) {
+			APP.removeChild();
+		});
 	}
 
 	if(APP.Settings.useSlideMenu) {
-		$.NavigationBar.showMenu();
+		$.NavigationBar.showMenu(function(_event) {
+			APP.toggleMenu();
+		});
 	} else {
-		$.NavigationBar.showSettings();
+		$.NavigationBar.showSettings(function(_event) {
+			APP.openSettings();
+		});
 	}
 };
 
@@ -60,12 +66,13 @@ $.handleUsername = function() {
 		cache: CONFIG.cache,
 		callback: $.handleVideos,
 		error: function() {
-			Alloy.createWidget("com.chariti.toast", null, {
-				text: "Unable to connect; try again later",
-				duration: 2000
-			});
-
 			APP.closeLoading();
+
+			Alloy.createWidget("com.mcongrove.toast", null, {
+				text: "Unable to connect; try again later",
+				duration: 2000,
+				view: APP.GlobalWrapper
+			});
 		}
 	});
 };

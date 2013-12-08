@@ -29,20 +29,18 @@ $.init = function() {
 		$.createEmail();
 	}
 
-	$.NavigationBar.setBackgroundColor(APP.Settings.colors.primary || "#000");
+	$.NavigationBar.setBackgroundColor(APP.Settings.colors.primary);
 
 	if(APP.Device.isHandheld) {
-		$.NavigationBar.showBack({
-			callback: function(_event) {
-				APP.removeAllChildren();
-			}
+		$.NavigationBar.showBack(function(_event) {
+			APP.removeAllChildren();
 		});
 	}
 
-	$.NavigationBar.showNext({
-		callback: function() {
-			$.createEmail(SELECTED);
-		}
+	$.NavigationBar.showNext(
+
+	function() {
+		$.createEmail(SELECTED);
 	});
 };
 
@@ -155,7 +153,7 @@ $.createEmail = function(_addresses) {
 	APP.log("debug", "share_contacts.createEmail");
 
 	var email = Ti.UI.createEmailDialog({
-		barColor: APP.Settings.colors.primary || "#000"
+		barColor: APP.Settings.colors.primary
 	});
 
 	if(_addresses) {

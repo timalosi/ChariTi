@@ -30,7 +30,7 @@ var APP = {
 	 * ChariTi framework version
 	 * @type {String}
 	 */
-	CVERSION: "1.2.0.111413",
+	CVERSION: "1.2.1",
 	/**
 	 * Legal information
 	 * @type {Object}
@@ -95,9 +95,9 @@ var APP = {
 		type: Alloy.isHandheld ? "handheld" : "tablet",
 		os: null,
 		name: null,
-		version: Titanium.Platform.version,
-		versionMajor: parseInt(Titanium.Platform.version.split(".")[0], 10),
-		versionMinor: parseInt(Titanium.Platform.version.split(".")[1], 10),
+		version: Ti.Platform.version,
+		versionMajor: parseInt(Ti.Platform.version.split(".")[0], 10),
+		versionMinor: parseInt(Ti.Platform.version.split(".")[1], 10),
 		width: Ti.Platform.displayCaps.platformWidth > Ti.Platform.displayCaps.platformHeight ? Ti.Platform.displayCaps.platformHeight : Ti.Platform.displayCaps.platformWidth,
 		height: Ti.Platform.displayCaps.platformWidth > Ti.Platform.displayCaps.platformHeight ? Ti.Platform.displayCaps.platformWidth : Ti.Platform.displayCaps.platformHeight,
 		dpi: Ti.Platform.displayCaps.dpi,
@@ -188,7 +188,7 @@ var APP = {
 	 * The loading view
 	 * @type {Object}
 	 */
-	Loading: Alloy.createWidget("com.chariti.loading").getView(),
+	Loading: Alloy.createWidget("com.mcongrove.loading").getView(),
 	/**
 	 * Whether or not to cancel the loading screen open because it's already open
 	 * @type {Boolean}
@@ -389,6 +389,10 @@ var APP = {
 		};
 
 		APP.Settings.colors.theme = APP.Settings.colors.hsb.primary.b < 65 ? "dark" : "light";
+
+		if(OS_IOS) {
+			APP.MainWindow.statusBarStyle = APP.Settings.colors.theme == "dark" ? Ti.UI.iPhone.StatusBar.LIGHT_CONTENT : Ti.UI.iPhone.StatusBar.DEFAULT;
+		}
 	},
 	/**
 	 * Builds out the tab group
@@ -396,35 +400,53 @@ var APP = {
 	build: function() {
 		APP.log("debug", "APP.build");
 
-		var tabs = [];
+		var nodes = [];
 		var imageFolder = !APP.Settings.useSlideMenu && APP.Settings.colors.theme == "light" ? "/icons/black/" : "/icons/white/";
+		var hasMenuHeaders = false;
 
 		for(var i = 0, x = APP.Nodes.length; i < x; i++) {
-			tabs.push({
+			nodes.push({
 				id: i,
 				title: APP.Nodes[i].title,
 				image: UTIL.fileExists(imageFolder + APP.Nodes[i].image + ".png") ? imageFolder + APP.Nodes[i].image + ".png" : null,
 				controller: APP.Nodes[i].type.toLowerCase(),
 				menuHeader: APP.Nodes[i].menuHeader
 			});
+
+			if(APP.Settings.useSlideMenu && APP.Nodes[i].menuHeader) {
+				hasMenuHeaders = true;
+			}
 		}
 
 		if(APP.Settings.useSlideMenu) {
-			APP.buildMenu(tabs);
+			// Add the Settings tab
+			nodes.push({
+				id: "settings",
+				title: "Settings",
+				image: "/icons/white/settings.png",
+				menuHeader: hasMenuHeaders ? "Application" : null
+			});
+
+			APP.buildMenu(nodes);
 		} else {
-			APP.buildTabs(tabs);
+			APP.buildTabs(nodes);
 		}
 	},
 	/**
 	 * Builds a TabGroup
-	 * @param {Array} _tabs The tabs to build
+	 * @param {Array} _nodes The items (tabs) to build
 	 */
-	buildTabs: function(_tabs) {
+	buildTabs: function(_nodes) {
 		APP.log("debug", "APP.buildTabs");
 
 		APP.Tabs.init({
-			tabs: _tabs,
-			colors: APP.Settings.colors
+			nodes: _nodes,
+			more: APP.Settings.colors.theme == "dark" ? "/icons/white/more.png" : "/icons/black/more.png",
+			color: {
+				background: APP.Settings.colors.primary,
+				active: APP.Settings.colors.secondary,
+				text: APP.Settings.colors.theme == "dark" ? "#FFF" : "#000"
+			}
 		});
 
 		// Add a handler for the tabs (make sure we remove existing ones first)
@@ -433,13 +455,17 @@ var APP = {
 	},
 	/**
 	 * Builds a slide menu
-	 * @param {Array} _tabs The tabs to build
+	 * @param {Array} _nodes The items (menu nodes) to build
 	 */
-	buildMenu: function(_tabs) {
+	buildMenu: function(_nodes) {
 		APP.log("debug", "APP.buildMenu");
 
 		APP.SlideMenu.init({
-			tabs: _tabs
+			nodes: _nodes,
+			color: {
+				headingBackground: APP.Settings.colors.primary,
+				headingText: APP.Settings.colors.theme == "dark" ? "#FFF" : "#000"
+			}
 		});
 
 		// Remove the TabGroup
@@ -448,9 +474,9 @@ var APP = {
 		// Move everything down to take up the TabGroup space
 		APP.ContentWrapper.bottom = "0dp";
 
-		// Add a handler for the tabs (make sure we remove existing ones first)
-		APP.SlideMenu.Tabs.removeEventListener("click", APP.handleMenuClick);
-		APP.SlideMenu.Tabs.addEventListener("click", APP.handleMenuClick);
+		// Add a handler for the nodes (make sure we remove existing ones first)
+		APP.SlideMenu.Nodes.removeEventListener("click", APP.handleMenuClick);
+		APP.SlideMenu.Nodes.addEventListener("click", APP.handleMenuClick);
 
 		// Listen for gestures on the main window to open/close the slide menu
 		APP.GlobalWrapper.addEventListener("swipe", function(_event) {
@@ -473,6 +499,7 @@ var APP = {
 		APP.Tabs.clear();
 
 		// Undo removal of TabGroup
+		APP.GlobalWrapper.remove(APP.Tabs.Wrapper);
 		APP.GlobalWrapper.add(APP.Tabs.Wrapper);
 		APP.ContentWrapper.bottom = "60dp";
 
@@ -489,6 +516,8 @@ var APP = {
 		APP.cancelLoading = false;
 		APP.loadingOpen = false;
 
+		APP.dropDatabase();
+
 		// NOTICE
 		// The following section is abstracted for PEEK
 
@@ -498,9 +527,8 @@ var APP = {
 	 * Kicks off the newly re-built application
 	 */
 	rebuildRestart: function() {
-		APP.log("debug", "APP.rebuildRestart");
+		Ti.API.debug("APP.rebuildRestart");
 
-		APP.dropDatabase();
 		APP.setupDatabase();
 		APP.loadContent();
 		APP.build();
@@ -993,7 +1021,7 @@ var APP = {
 		db.close();
 
 		var email = Ti.UI.createEmailDialog({
-			barColor: APP.Settings.colors.primary || "#000",
+			barColor: APP.Settings.colors.primary,
 			subject: "Application Log",
 			messageBody: log
 		});

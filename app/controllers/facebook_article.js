@@ -5,7 +5,7 @@
  * @uses Models.facebook
  * @uses core
  * @uses social
- * @uses Widgets.com.chariti.detailNavigation
+ * @uses Widgets.com.mcongrove.detailNavigation
  */
 var APP = require("core");
 var SOCIAL = require("social");
@@ -40,26 +40,22 @@ $.handleData = function(_data) {
 	time = time.isBefore() ? time : DATE();
 
 	$.heading.text = _data.title;
-	$.heading.color = APP.Settings.colors.primary || "#000";
+	$.heading.color = APP.Settings.colors.hsb.primary.b > 70 ? "#000" : APP.Settings.colors.primary;
 	$.text.value = _data.description;
 	$.date.text = STRING.ucfirst(time.fromNow());
 
 	ACTION.url = _data.link;
 
-	$.NavigationBar.setBackgroundColor(APP.Settings.colors.primary || "#000");
+	$.NavigationBar.setBackgroundColor(APP.Settings.colors.primary);
 
 	if(APP.Device.isHandheld) {
-		$.NavigationBar.showBack({
-			callback: function(_event) {
-				APP.removeAllChildren();
-			}
+		$.NavigationBar.showBack(function(_event) {
+			APP.removeAllChildren();
 		});
 	}
 
-	$.NavigationBar.showAction({
-		callback: function(_event) {
-			SOCIAL.share(ACTION.url, $.NavigationBar.right);
-		}
+	$.NavigationBar.showAction(function(_event) {
+		SOCIAL.share(ACTION.url, $.NavigationBar.right);
 	});
 };
 
@@ -70,7 +66,8 @@ $.handleNavigation = function() {
 	ACTION.next = MODEL.getNextArticle(CONFIG.id);
 	ACTION.previous = MODEL.getPreviousArticle(CONFIG.id);
 
-	var navigation = Alloy.createWidget("com.chariti.detailNavigation", null, {
+	var navigation = Alloy.createWidget("com.mcongrove.detailNavigation", null, {
+		color: APP.Settings.colors.theme == "dark" ? "white" : "black",
 		down: function(_event) {
 			APP.log("debug", "facebook_article @next");
 

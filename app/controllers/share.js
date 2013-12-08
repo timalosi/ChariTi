@@ -15,18 +15,24 @@ var SELECTED;
 $.init = function() {
 	APP.log("debug", "share.init | " + JSON.stringify(CONFIG));
 
-	$.NavigationBar.setBackgroundColor(APP.Settings.colors.primary || "#000");
+	$.NavigationBar.setBackgroundColor(APP.Settings.colors.primary);
 
 	$.loadData();
 
 	if(CONFIG.isChild === true) {
-		$.NavigationBar.showBack();
+		$.NavigationBar.showBack(function(_event) {
+			APP.removeChild();
+		});
 	}
 
 	if(APP.Settings.useSlideMenu) {
-		$.NavigationBar.showMenu();
+		$.NavigationBar.showMenu(function(_event) {
+			APP.toggleMenu();
+		});
 	} else {
-		$.NavigationBar.showSettings();
+		$.NavigationBar.showSettings(function(_event) {
+			APP.openSettings();
+		});
 	}
 };
 

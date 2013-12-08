@@ -15,21 +15,27 @@ $.init = function() {
 	APP.log("debug", "donate.init | " + JSON.stringify(CONFIG));
 
 	$.heading.text = CONFIG.heading;
-	$.heading.color = APP.Settings.colors.primary || "#666";
+	$.heading.color = APP.Settings.colors.hsb.primary.b > 70 ? "#000" : APP.Settings.colors.primary;
 	$.text.text = CONFIG.text;
-	$.button.backgroundColor = APP.Settings.colors.primary || "#000";
-	$.buttonText.color = APP.Settings.colors.theme == "dark" ? "#FFF" : "#000";
+	$.button.backgroundColor = APP.Settings.colors.hsb.primary.b > 70 ? "#000" : APP.Settings.colors.primary;
+	$.buttonText.color = APP.Settings.colors.theme == "dark" ? "#FFF" : (APP.Settings.colors.hsb.primary.b > 70 ? "#FFF" : "#000");
 
-	$.NavigationBar.setBackgroundColor(APP.Settings.colors.primary || "#000");
+	$.NavigationBar.setBackgroundColor(APP.Settings.colors.primary);
 
 	if(CONFIG.isChild === true) {
-		$.NavigationBar.showBack();
+		$.NavigationBar.showBack(function(_event) {
+			APP.removeChild();
+		});
 	}
 
 	if(APP.Settings.useSlideMenu) {
-		$.NavigationBar.showMenu();
+		$.NavigationBar.showMenu(function(_event) {
+			APP.toggleMenu();
+		});
 	} else {
-		$.NavigationBar.showSettings();
+		$.NavigationBar.showSettings(function(_event) {
+			APP.openSettings();
+		});
 	}
 };
 

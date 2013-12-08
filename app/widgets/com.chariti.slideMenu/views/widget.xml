@@ -1,5 +1,0 @@
-<Alloy>
-	<View id="Wrapper">
-		<TableView id="Tabs" />
-	</View>
-</Alloy>

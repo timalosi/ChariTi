@@ -16,11 +16,15 @@ $.init = function() {
 		$.container.remove($.legal_table);
 	} else if(!APP.LEGAL.TOS || !APP.LEGAL.PRIVACY) {
 		if(!APP.LEGAL.TOS) {
-			$.legal_table.deleteRow(0);
+			setTimeout(function() {
+				$.legal_table.deleteRow(0);
+			}, 1);
 		}
 
 		if(!APP.LEGAL.PRIVACY) {
-			$.legal_table.deleteRow(1);
+			setTimeout(function() {
+				$.legal_table.deleteRow(1);
+			}, 1);
 		}
 
 		$.legal_table.height = "45dp";
@@ -33,15 +37,15 @@ $.init = function() {
 	$.copyright.text = APP.LEGAL.COPYRIGHT + " v" + APP.VERSION;
 	$.chariti.text = "ChariTi ‌© 2013 Matthew Congrove v" + APP.CVERSION;
 
-	$.NavigationBar.setBackgroundColor(APP.Settings.colors.primary || "#000");
+	$.NavigationBar.setBackgroundColor(APP.Settings.colors.primary);
 
 	if(APP.Settings.useSlideMenu) {
-		$.NavigationBar.showMenu();
+		$.NavigationBar.showMenu(function(_event) {
+			APP.toggleMenu();
+		});
 	} else {
-		$.NavigationBar.showBack({
-			callback: function(_event) {
-				APP.removeChild(true);
-			}
+		$.NavigationBar.showBack(function(_event) {
+			APP.removeChild(true);
 		});
 	}
 };

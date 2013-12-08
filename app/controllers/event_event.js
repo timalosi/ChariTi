@@ -5,7 +5,7 @@
  * @uses Models.event
  * @uses core
  * @uses social
- * @uses Widgets.com.chariti.detailNavigation
+ * @uses Widgets.com.mcongrove.detailNavigation
  */
 var APP = require("core");
 var SOCIAL = require("social");
@@ -36,7 +36,7 @@ $.handleData = function(_data) {
 	$.handleNavigation(_data.date_start);
 
 	$.heading.text = _data.title;
-	$.heading.color = APP.Settings.colors.primary || "#000";
+	$.heading.color = APP.Settings.colors.hsb.primary.b > 70 ? "#000" : APP.Settings.colors.primary;
 	$.text.value = _data.description;
 	$.location.text = "@ " + _data.location;
 	$.photo.image = "http://graph.facebook.com/" + _data.id + "/picture?type=large";
@@ -44,20 +44,16 @@ $.handleData = function(_data) {
 
 	ACTION.url = "http://www.facebook.com/events/" + _data.id;
 
-	$.NavigationBar.setBackgroundColor(APP.Settings.colors.primary || "#000");
+	$.NavigationBar.setBackgroundColor(APP.Settings.colors.primary);
 
 	if(APP.Device.isHandheld) {
-		$.NavigationBar.showBack({
-			callback: function(_event) {
-				APP.removeAllChildren();
-			}
+		$.NavigationBar.showBack(function(_event) {
+			APP.removeAllChildren();
 		});
 	}
 
-	$.NavigationBar.showAction({
-		callback: function(_event) {
-			SOCIAL.share(ACTION.url, $.NavigationBar.right);
-		}
+	$.NavigationBar.showAction(function(_event) {
+		SOCIAL.share(ACTION.url, $.NavigationBar.right);
 	});
 };
 
@@ -69,7 +65,8 @@ $.handleNavigation = function(_date) {
 	ACTION.next = MODEL.getNextEvent(_date);
 	ACTION.previous = MODEL.getPreviousEvent(_date);
 
-	var navigation = Alloy.createWidget("com.chariti.detailNavigation", null, {
+	var navigation = Alloy.createWidget("com.mcongrove.detailNavigation", null, {
+		color: APP.Settings.colors.theme == "dark" ? "white" : "black",
 		down: function(_event) {
 			APP.log("debug", "event_event @next");
 

@@ -18,13 +18,11 @@ $.init = function() {
 	$.container.scalesPageToFit = true;
 	$.container.willHandleTouches = false;
 
-	$.NavigationBar.setBackgroundColor(APP.Settings.colors.primary || "#000");
+	$.NavigationBar.setBackgroundColor(APP.Settings.colors.primary);
 	$.NavigationBar.setTitle(CONFIG.title);
 
-	$.NavigationBar.showBack({
-		callback: function(_event) {
-			APP.removeChild(true);
-		}
+	$.NavigationBar.showBack(function(_event) {
+		APP.removeChild(true);
 	});
 };
 
